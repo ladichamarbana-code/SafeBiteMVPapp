@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SafeBite — Prototipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #006B5B;
+  --primary-light: #00856E;
+  --primary-dark: #004D41;
+  --primary-soft: #E8F5F2;
+  --primary-mid: #C2E8E1;
+  --secondary: #51635F;
+  --danger: #E53935;
+  --danger-soft: #FDECEA;
+  --warning: #F59E0B;
+  --warning-soft: #FEF3C7;
+  --success: #006B5B;
+  --success-soft: #E8F5F2;
+  --neutral: #F8F9FA;
+  --neutral-2: #EAECEE;
+  --neutral-3: #D0D5DD;
+  --dark: #0F1C1A;
+  --dark-2: #1A2E2B;
+  --text: #1A2E2B;
+  --text-2: #51635F;
+  --text-3: #8FA39E;
+  --white: #FFFFFF;
+  --shadow: 0 4px 24px rgba(0,107,91,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,107,91,0.15);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+  width:100%; height:100%;
+  background: linear-gradient(135deg, #D2DDD9 0%, #DCE7E3 50%, #D4E1DC 100%);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stage: just centers the phone */
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ── PHONE SHELL ── */
+.phone-shell {
+  width: 390px;
+  height: 844px;
+  background: var(--white);
+  border-radius: 52px;
+  box-shadow:
+    0 0 0 12px #1A1A1A,
+    0 0 0 14px #333,
+    0 60px 120px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* notch */
+.phone-shell::before {
+  content:'';
+  position:absolute;
+  top:0; left:50%; transform:translateX(-50%);
+  width:120px; height:34px;
+  background:#1A1A1A;
+  border-radius:0 0 22px 22px;
+  z-index:1000;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position:absolute;
+  inset:0;
+  width:100%; height:100%;
+  background: var(--neutral);
+  overflow:hidden;
+  display:none;
+  flex-direction:column;
+}
+.screen.active { display:flex; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  height:44px;
+  padding: 12px 28px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-shrink:0;
+  z-index:10;
+}
+.status-time {
+  font-family:'Manrope',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color: var(--text);
+}
+.status-icons { display:flex; gap:6px; align-items:center; }
+.status-icons span { font-size:13px; }
+
+/* ── SCROLL CONTENT ── */
+.scroll-area {
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.scroll-area::-webkit-scrollbar { display:none; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height:83px;
+  background:var(--white);
+  border-top:1px solid var(--neutral-2);
+  display:flex;
+  align-items:flex-start;
+  padding-top:10px;
+  flex-shrink:0;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+}
+.nav-item {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  padding:4px 0;
+  transition:all 0.2s;
+}
+.nav-icon { font-size:22px; line-height:1; display:flex; align-items:center; justify-content:center; height:24px; }
+.nav-label {
+  font-size:10px;
+  font-weight:600;
+  color:var(--text-3);
+  letter-spacing:0.01em;
+}
+.nav-item.active .nav-label { color:var(--primary); }
+.nav-item.active .nav-icon { transform:scale(1.1); color:var(--primary); }
+.nav-item .nav-icon { color:var(--text-3); transition:color 0.2s; }
+.nav-item.active .nav-label { color:var(--primary); font-weight:700; }
+
+/* ── TYPOGRAPHY ── */
+h1 { font-family:'Manrope',sans-serif; font-weight:900; font-size:28px; letter-spacing:-0.03em; color:var(--text); line-height:1.15; }
+h2 { font-family:'Manrope',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em; color:var(--text); line-height:1.2; }
+h3 { font-family:'Manrope',sans-serif; font-weight:700; font-size:17px; color:var(--text); }
+p { font-size:14px; color:var(--text-2); line-height:1.5; }
+.label-sm { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); }
+
+/* ── CARDS ── */
+.card {
+  background:var(--white);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+.card-sm { border-radius:var(--radius-sm); padding:16px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display:flex; align-items:center; justify-content:center;
+  gap:8px;
+  padding:16px 24px;
+  border-radius:100px;
+  font-family:'Manrope',sans-serif;
+  font-weight:700;
+  font-size:16px;
+  cursor:pointer;
+  border:none;
+  transition:all 0.18s cubic-bezier(.4,0,.2,1);
+  letter-spacing:0.01em;
+  width:100%;
+}
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:var(--primary); color:var(--white); box-shadow:0 4px 20px rgba(0,107,91,0.35); }
+.btn-primary:active { background:var(--primary-dark); }
+.btn-secondary { background:var(--primary-soft); color:var(--primary); }
+.btn-outline { background:transparent; color:var(--primary); border:1.5px solid var(--primary); }
+.btn-sm { padding:10px 18px; font-size:13px; }
+
+/* ── CHIPS ── */
+.chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 14px;
+  border-radius:100px;
+  font-size:13px; font-weight:600;
+  cursor:pointer;
+  border:1.5px solid var(--neutral-3);
+  background:var(--white);
+  color:var(--text-2);
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+.chip.selected {
+  background:var(--primary);
+  border-color:var(--primary);
+  color:var(--white);
+}
+.chip-danger.selected { background:var(--danger); border-color:var(--danger); }
+
+/* ── BADGE ── */
+.badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:4px 10px;
+  border-radius:100px;
+  font-size:11px; font-weight:700;
+}
+.badge-green { background:var(--primary-soft); color:var(--primary); }
+.badge-red { background:var(--danger-soft); color:var(--danger); }
+.badge-amber { background:var(--warning-soft); color:#B45309; }
+
+/* ── RISK INDICATOR ── */
+.risk-bar {
+  height:8px; border-radius:4px;
+  background:var(--neutral-2);
+  overflow:hidden;
+}
+.risk-fill { height:100%; border-radius:4px; transition:width 1s ease; }
+.risk-safe .risk-fill { background:var(--primary); }
+.risk-warn .risk-fill { background:var(--warning); }
+.risk-danger .risk-fill { background:var(--danger); }
+
+/* ═══════════════════════════════════════
+   SCREEN 1 — SPLASH
+═══════════════════════════════════════ */
+#splash {
+  background: linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 50%, #00A882 100%);
+  display:flex !important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.splash-logo {
+  width:90px; height:90px;
+  background:rgba(255,255,255,0.15);
+  border-radius:28px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:44px;
+  margin-bottom:24px;
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.25);
+  animation:splashPop 0.8s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+.splash-name {
+  font-family:'Manrope',sans-serif;
+  font-weight:900;
+  font-size:36px;
+  color:var(--white);
+  letter-spacing:-0.04em;
+  animation:splashFade 0.6s ease 0.3s both;
+}
+.splash-tag {
+  font-size:14px;
+  color:rgba(255,255,255,0.65);
+  margin-top:8px;
+  font-weight:500;
+  animation:splashFade 0.6s ease 0.5s both;
+}
+.splash-loader {
+  position:absolute;
+  bottom:80px;
+  width:48px; height:4px;
+  background:rgba(255,255,255,0.2);
+  border-radius:2px;
+  overflow:hidden;
+}
+.splash-loader::after {
+  content:'';
+  position:absolute;
+  left:0; top:0; height:100%;
+  background:rgba(255,255,255,0.8);
+  border-radius:2px;
+  animation:loaderSlide 2s ease forwards;
+}
+@keyframes splashPop {
+  from { transform:scale(0.5); opacity:0; }
+  to   { transform:scale(1);   opacity:1; }
+}
+@keyframes splashFade {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes loaderSlide {
+  from { width:0; }
+  to   { width:100%; }
+}
+/* bg pattern */
+.splash-bg {
+  position:absolute; inset:0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(0,0,0,0.15) 0%, transparent 50%);
+}
+
+/* ═══════════════════════════════════════
+   SCREEN 2 — ONBOARDING
+═══════════════════════════════════════ */
+#onboarding { background:var(--white); }
+.onb-header { padding:60px 32px 20px; }
+.onb-slides { display:flex; overflow:hidden; flex:1; }
+.onb-slide {
+  min-width:100%;
+  display:flex; flex-direction:column;
+  align-items:center;
+  padding:0 32px;
+}
+.onb-illo {
+  width:260px; height:260px;
+  border-radius:36px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:100px;
+  margin-bottom:36px;
+  position:relative;
+  overflow:hidden;
+}
+.onb-illo-0 { background:linear-gradient(135deg, #E8F5F2 0%, #C2E8E1 100%); }
+.onb-illo-1 { background:linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); }
+.onb-illo-2 { background:linear-gradient(135deg, #FDECEA 0%, #FECACA 100%); }
+.onb-illo-3 { background:linear-gradient(135deg, #E8F5F2 0%, #A7F3D0 100%); }
+.onb-illo-inner {
+  position:absolute;
+  inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:90px;
+  animation:floatAnim 3s ease-in-out infinite;
+}
+@keyframes floatAnim {
+  0%,100% { transform:translateY(0) rotate(-2deg); }
+  50% { transform:translateY(-8px) rotate(2deg); }
+}
+.onb-dots { display:flex; gap:8px; margin-bottom:24px; }
+.onb-dot {
+  height:6px; border-radius:3px;
+  background:var(--neutral-3);
+  transition:all 0.3s;
+}
+.onb-dot.active { width:24px; background:var(--primary); }
+.onb-dot:not(.active) { width:6px; }
+.onb-footer { padding:24px 32px 40px; }
+
+/* ═══════════════════════════════════════
+   SCREEN 3 — SETUP ALERGIAS
+═══════════════════════════════════════ */
+#setup { background:var(--white); }
+.setup-header {
+  padding:60px 24px 24px;
+  background:var(--white);
+}
+.setup-progress {
+  height:4px;
+  background:var(--neutral-2);
+  border-radius:2px;
+  margin:16px 0 0;
+  overflow:hidden;
+}
+.setup-progress-fill {
+  height:100%;
+  background:var(--primary);
+  border-radius:2px;
+  width:66%;
+  transition:width 0.5s ease;
+}
+.chips-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 24px 16px; }
+.severity-row {
+  display:flex; gap:8px;
+  padding:0 24px;
+  margin-bottom:16px;
+}
+.severity-btn {
+  flex:1; padding:10px 0;
+  border-radius:var(--radius-sm);
+  font-size:12px; font-weight:700;
+  text-align:center;
+  cursor:pointer;
+  border:1.5px solid var(--neutral-3);
+  background:var(--white);
+  color:var(--text-2);
+  transition:all 0.2s;
+}
+.severity-btn.mild.sel { background:#FEF3C7; border-color:var(--warning); color:#B45309; }
+.severity-btn.moderate.sel { background:#FFEDD5; border-color:#F97316; color:#C2410C; }
+.severity-btn.severe.sel { background:var(--danger-soft); border-color:var(--danger); color:var(--danger); }
+.section-label { padding:16px 24px 10px; font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:var(--text); }
+
+/* ═══════════════════════════════════════
+   SCREEN 4 — HOME
+═══════════════════════════════════════ */
+#home { background:var(--neutral); }
+.home-header {
+  background:linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 100%);
+  padding:60px 24px 32px;
+  border-radius:0 0 36px 36px;
+  position:relative;
+  overflow:hidden;
+}
+.home-header::before {
+  content:'';
+  position:absolute;
+  top:-40px; right:-40px;
+  width:180px; height:180px;
+  background:rgba(255,255,255,0.06);
+  border-radius:50%;
+}
+.home-header::after {
+  content:'';
+  position:absolute;
+  bottom:-60px; left:-20px;
+  width:140px; height:140px;
+  background:rgba(255,255,255,0.04);
+  border-radius:50%;
+}
+.home-greeting {
+  font-size:14px; color:rgba(255,255,255,0.7);
+  margin-bottom:4px; font-weight:500;
+  position:relative; z-index:1;
+}
+.home-name {
+  font-family:'Manrope',sans-serif;
+  font-weight:900;
+  font-size:26px;
+  color:var(--white);
+  letter-spacing:-0.02em;
+  position:relative; z-index:1;
+}
+.home-status-card {
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  margin-top:20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  position:relative; z-index:1;
+}
+.status-dot {
+  width:10px; height:10px;
+  border-radius:50%;
+  background:#4ADE80;
+  flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(74,222,128,0.3);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 3px rgba(74,222,128,0.3); }
+  50% { box-shadow:0 0 0 6px rgba(74,222,128,0.1); }
+}
+.scan-fab {
+  background:var(--primary);
+  border-radius:28px;
+  padding:18px 28px;
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  cursor:pointer;
+  box-shadow:0 8px 32px rgba(0,107,91,0.45);
+  transition:all 0.2s;
+  border:none;
+  width:100%;
+  font-family:'Manrope',sans-serif;
+  font-weight:800;
+  font-size:17px;
+  color:var(--white);
+  letter-spacing:-0.01em;
+}
+.scan-fab:active { transform:scale(0.98); }
+.scan-icon-circle {
+  width:44px; height:44px;
+  background:rgba(255,255,255,0.2);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.home-section { padding:24px 24px 0; }
+.home-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.see-all { font-size:13px; font-weight:700; color:var(--primary); cursor:pointer; }
+
+/* Recent scan row */
+.scan-row {
+  display:flex; align-items:center; gap:14px;
+  background:var(--white);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin-bottom:10px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.scan-row:active { transform:scale(0.99); }
+.scan-thumb {
+  width:52px; height:52px;
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px;
+  flex-shrink:0;
+}
+.scan-thumb-safe { background:var(--primary-soft); }
+.scan-thumb-warn { background:var(--warning-soft); }
+.scan-thumb-danger { background:var(--danger-soft); }
+
+/* Restaurant cards */
+.rest-scroll { display:flex; gap:14px; overflow-x:auto; padding:0 24px 4px; scrollbar-width:none; }
+.rest-scroll::-webkit-scrollbar { display:none; }
+.rest-card {
+  min-width:180px;
+  background:var(--white);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.rest-card-img {
+  height:100px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:40px;
+}
+.rest-card-body { padding:12px; }
+.rest-card-name { font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:var(--text); margin-bottom:4px; }
+.rest-card-info { font-size:11px; color:var(--text-3); }
+
+/* Alert strip */
+.alert-strip {
+  margin:0 24px 10px;
+  background:var(--warning-soft);
+  border:1px solid #FDE68A;
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer;
+}
+.alert-strip-icon { font-size:22px; flex-shrink:0; }
+
+/* ═══════════════════════════════════════
+   SCREEN 5 — SCANNER
+═══════════════════════════════════════ */
+#scanner { background:#0A0A0A; }
+.scanner-cam {
+  flex:1;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(180deg, #0D1F1C 0%, #0A0A0A 100%);
+  overflow:hidden;
+}
+/* fake camera grid */
+.cam-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+.scan-frame {
+  width:240px; height:240px;
+  position:relative;
+  z-index:2;
+}
+.scan-corner {
+  position:absolute;
+  width:28px; height:28px;
+  border-color:var(--primary-light);
+  border-style:solid;
+}
+.sc-tl { top:0; left:0; border-width:3px 0 0 3px; border-radius:4px 0 0 0; }
+.sc-tr { top:0; right:0; border-width:3px 3px 0 0; border-radius:0 4px 0 0; }
+.sc-bl { bottom:0; left:0; border-width:0 0 3px 3px; border-radius:0 0 0 4px; }
+.sc-br { bottom:0; right:0; border-width:0 3px 3px 0; border-radius:0 0 4px 0; }
+.scan-beam {
+  position:absolute;
+  left:4px; right:4px; height:2px;
+  background:linear-gradient(90deg, transparent, var(--primary-light), var(--primary), var(--primary-light), transparent);
+  border-radius:2px;
+  animation:beamScan 2s ease-in-out infinite;
+  box-shadow:0 0 12px var(--primary);
+}
+@keyframes beamScan {
+  0%,100% { top:4px; opacity:0.9; }
+  50% { top:232px; opacity:1; }
+}
+.scan-product-ghost {
+  position:absolute;
+  width:120px; height:160px;
+  background:rgba(255,255,255,0.04);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:60px;
+  z-index:1;
+  animation:ghostPulse 2s ease-in-out infinite;
+}
+@keyframes ghostPulse {
+  0%,100% { opacity:0.4; transform:scale(1); }
+  50% { opacity:0.7; transform:scale(1.02); }
+}
+.scanner-hint {
+  position:absolute;
+  bottom:24px; left:0; right:0;
+  text-align:center;
+  color:rgba(255,255,255,0.5);
+  font-size:13px;
+  font-weight:500;
+}
+.scanner-top {
+  position:absolute;
+  top:0; left:0; right:0;
+  padding:60px 24px 20px;
+  display:flex; align-items:center; gap:16px;
+  z-index:10;
+}
+.scanner-top-btn {
+  width:40px; height:40px;
+  background:rgba(255,255,255,0.1);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:18px;
+  backdrop-filter:blur(8px);
+  border:none;
+  color:white;
+}
+.scanner-title {
+  font-family:'Manrope',sans-serif;
+  font-weight:700; font-size:17px;
+  color:var(--white);
+}
+.scanner-bottom {
+  padding:20px 24px 40px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(12px);
+}
+.scanner-mode-row { display:flex; gap:10px; margin-bottom:16px; }
+.scanner-mode-btn {
+  flex:1; padding:10px;
+  border-radius:var(--radius-sm);
+  font-size:12px; font-weight:700;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06);
+  color:rgba(255,255,255,0.7);
+  transition:all 0.2s;
+  text-align:center;
+}
+.scanner-mode-btn.active {
+  background:var(--primary);
+  border-color:var(--primary);
+  color:var(--white);
+}
+.gallery-btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px;
+  border-radius:100px;
+  border:1.5px solid rgba(255,255,255,0.2);
+  background:transparent;
+  color:rgba(255,255,255,0.7);
+  font-size:14px; font-weight:600;
+  cursor:pointer;
+  width:100%;
+}
+
+/* ═══════════════════════════════════════
+   SCREEN 6 — RESULT
+═══════════════════════════════════════ */
+#result { background:var(--neutral); }
+.result-hero {
+  background:linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 100%);
+  padding:54px 24px 28px;
+  position:relative;
+  overflow:hidden;
+}
+.result-hero.danger-bg { background:linear-gradient(160deg, #7F1D1D 0%, var(--danger) 100%); }
+.result-hero.warn-bg { background:linear-gradient(160deg, #78350F 0%, var(--warning) 100%); }
+.result-product-row { display:flex; align-items:center; gap:16px; margin-bottom:20px; position:relative; z-index:1; }
+.result-thumb {
+  width:72px; height:72px;
+  background:rgba(255,255,255,0.15);
+  border-radius:18px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:38px;
+  border:1px solid rgba(255,255,255,0.25);
+  backdrop-filter:blur(10px);
+}
+.result-name {
+  font-family:'Manrope',sans-serif;
+  font-weight:800; font-size:20px;
+  color:var(--white);
+  letter-spacing:-0.02em;
+  margin-bottom:4px;
+}
+.result-brand { font-size:13px; color:rgba(255,255,255,0.6); }
+.result-score {
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  display:flex; align-items:center; gap:14px;
+  position:relative; z-index:1;
+  backdrop-filter:blur(10px);
+}
+.score-num {
+  font-family:'Manrope',sans-serif;
+  font-weight:900; font-size:36px;
+  color:var(--white);
+  line-height:1;
+}
+.score-label { font-size:13px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.score-bar { flex:1; height:8px; background:rgba(255,255,255,0.2); border-radius:4px; overflow:hidden; }
+.score-bar-fill { height:100%; background:var(--white); border-radius:4px; }
+.result-tab-row {
+  display:flex;
+  background:var(--white);
+  border-bottom:1px solid var(--neutral-2);
+}
+.result-tab {
+  flex:1; padding:14px;
+  text-align:center;
+  font-size:13px; font-weight:700;
+  color:var(--text-3);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.2s;
+}
+.result-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* allergen chips */
+.allergen-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 12px;
+  border-radius:var(--radius-xs);
+  font-size:12px; font-weight:700;
+  margin:4px;
+}
+.allergen-detected { background:var(--danger-soft); color:var(--danger); }
+.allergen-trace { background:var(--warning-soft); color:#B45309; }
+.allergen-safe { background:var(--primary-soft); color:var(--primary); }
+
+/* ingredient row */
+.ingredient-row {
+  display:flex; align-items:center;
+  padding:12px 0;
+  border-bottom:1px solid var(--neutral-2);
+  gap:10px;
+}
+.ingredient-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ═══════════════════════════════════════
+   SCREEN 7 — RESTAURANTS
+═══════════════════════════════════════ */
+#restaurants { background:var(--neutral); }
+.rest-header {
+  background:var(--white);
+  padding:54px 24px 16px;
+}
+.search-bar {
+  display:flex; align-items:center; gap:10px;
+  background:var(--neutral);
+  border-radius:100px;
+  padding:12px 18px;
+  margin-top:14px;
+  border:1.5px solid var(--neutral-2);
+}
+.search-bar input {
+  flex:1; border:none; background:transparent;
+  font-size:14px; font-family:'Plus Jakarta Sans',sans-serif;
+  color:var(--text); outline:none;
+}
+.filter-row { display:flex; gap:8px; overflow-x:auto; padding:12px 24px; scrollbar-width:none; }
+.filter-row::-webkit-scrollbar { display:none; }
+/* map placeholder */
+.map-placeholder {
+  height:200px;
+  background:linear-gradient(135deg, #E8F5F2 0%, #C2E8E1 50%, #A7F3D0 100%);
+  position:relative;
+  overflow:hidden;
+  margin:0 24px 20px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.map-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,107,91,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,107,91,0.08) 1px, transparent 1px);
+  background-size:30px 30px;
+}
+.map-pin {
+  position:absolute;
+  width:36px; height:36px;
+  background:var(--primary);
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  box-shadow:0 4px 12px rgba(0,107,91,0.4);
+  display:flex; align-items:center; justify-content:center;
+}
+.map-pin::after { content:''; position:absolute; width:14px; height:14px; background:white; border-radius:50%; }
+.rest-list-card {
+  background:var(--white);
+  border-radius:var(--radius-sm);
+  padding:16px;
+  margin:0 24px 12px;
+  box-shadow:var(--shadow);
+  display:flex; align-items:center; gap:14px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.rest-list-card:active { transform:scale(0.99); }
+.rest-emoji { font-size:32px; width:56px; text-align:center; }
+.rest-compat {
+  width:24px; height:24px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  flex-shrink:0;
+  margin-left:auto;
+}
+.rest-compat-full { background:var(--primary-soft); color:var(--primary); }
+.rest-compat-part { background:var(--warning-soft); color:#B45309; }
+
+/* ═══════════════════════════════════════
+   SCREEN 8 — PROFILE
+═══════════════════════════════════════ */
+#profile { background:var(--neutral); }
+.profile-header {
+  background:linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 100%);
+  padding:54px 24px 32px;
+  text-align:center;
+  border-radius:0 0 36px 36px;
+}
+.profile-avatar {
+  width:80px; height:80px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  border:3px solid rgba(255,255,255,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px;
+  margin:0 auto 12px;
+}
+.profile-username {
+  font-family:'Manrope',sans-serif;
+  font-weight:800; font-size:20px;
+  color:var(--white);
+  letter-spacing:-0.02em;
+}
+.profile-email { font-size:13px; color:rgba(255,255,255,0.6); margin-top:4px; }
+.profile-stats-row {
+  display:flex;
+  background:rgba(255,255,255,0.12);
+  border-radius:var(--radius-sm);
+  margin-top:20px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.pstat { flex:1; padding:14px 10px; text-align:center; }
+.pstat:not(:last-child) { border-right:1px solid rgba(255,255,255,0.15); }
+.pstat-num { font-family:'Manrope',sans-serif; font-weight:900; font-size:20px; color:var(--white); line-height:1; }
+.pstat-label { font-size:10px; color:rgba(255,255,255,0.6); margin-top:3px; }
+.settings-group {
+  background:var(--white);
+  border-radius:var(--radius);
+  margin:16px 24px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.settings-row {
+  display:flex; align-items:center;
+  padding:16px 18px;
+  gap:14px;
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.settings-row:active { background:var(--neutral); }
+.settings-row:not(:last-child) { border-bottom:1px solid var(--neutral-2); }
+.settings-icon {
+  width:36px; height:36px;
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  flex-shrink:0;
+}
+.settings-text { flex:1; }
+.settings-title { font-size:14px; font-weight:600; color:var(--text); }
+.settings-sub { font-size:12px; color:var(--text-3); margin-top:1px; }
+.settings-arrow { color:var(--text-3); font-size:16px; }
+/* toggle */
+.toggle {
+  width:44px; height:26px;
+  border-radius:13px;
+  background:var(--neutral-3);
+  position:relative;
+  cursor:pointer;
+  transition:background 0.2s;
+  flex-shrink:0;
+}
+.toggle.on { background:var(--primary); }
+.toggle::after {
+  content:'';
+  position:absolute;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:white;
+  top:3px; left:3px;
+  transition:transform 0.2s;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform:translateX(18px); }
+
+/* ═══════════════════════════════════════
+   SCREEN 9 — PREMIUM
+═══════════════════════════════════════ */
+#premium { background:var(--dark); }
+.premium-header {
+  background:linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, #00A882 100%);
+  padding:60px 24px 48px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.premium-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:100px;
+  padding:6px 16px;
+  font-size:12px; font-weight:700;
+  color:var(--white);
+  margin-bottom:20px;
+  backdrop-filter:blur(8px);
+}
+.premium-stars { letter-spacing:2px; }
+.premium-title {
+  font-family:'Manrope',sans-serif;
+  font-weight:900; font-size:30px;
+  color:var(--white);
+  letter-spacing:-0.04em;
+  line-height:1.1;
+  margin-bottom:12px;
+}
+.premium-sub { font-size:14px; color:rgba(255,255,255,0.65); line-height:1.5; }
+.premium-plans { display:flex; gap:12px; padding:24px; }
+.plan-card {
+  flex:1;
+  border-radius:var(--radius-sm);
+  padding:18px 14px;
+  text-align:center;
+  cursor:pointer;
+  border:2px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.05);
+  transition:all 0.2s;
+  position:relative;
+}
+.plan-card.featured {
+  border-color:var(--primary-light);
+  background:rgba(0,107,91,0.2);
+}
+.plan-badge-top {
+  position:absolute;
+  top:-10px; left:50%; transform:translateX(-50%);
+  background:var(--primary);
+  color:white;
+  font-size:10px; font-weight:700;
+  padding:3px 10px;
+  border-radius:100px;
+  white-space:nowrap;
+}
+.plan-period { font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px; }
+.plan-price {
+  font-family:'Manrope',sans-serif;
+  font-weight:900; font-size:28px;
+  color:var(--white);
+  letter-spacing:-0.03em;
+  line-height:1;
+}
+.plan-price span { font-size:14px; font-weight:500; }
+.plan-sub { font-size:11px; color:rgba(255,255,255,0.4); margin-top:6px; }
+.premium-feature-row {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:14px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.pf-icon {
+  width:34px; height:34px;
+  border-radius:10px;
+  background:rgba(0,107,91,0.3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.pf-title { font-size:14px; font-weight:700; color:var(--white); margin-bottom:3px; }
+.pf-sub { font-size:12px; color:rgba(255,255,255,0.45); line-height:1.4; }
+.premium-footer { padding:20px 24px 40px; }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+@keyframes slideIn {
+  from { transform:translateX(100%); }
+  to { transform:translateX(0); }
+}
+@keyframes slideInLeft {
+  from { transform:translateX(-100%); }
+  to { transform:translateX(0); }
+}
+.anim-fade-up { animation:fadeUp 0.5s ease both; }
+.anim-1 { animation-delay:0.05s; }
+.anim-2 { animation-delay:0.12s; }
+.anim-3 { animation-delay:0.2s; }
+.anim-4 { animation-delay:0.28s; }
+.anim-5 { animation-delay:0.36s; }
+
+/* ═══════════════════════════════════════
+   MODAL / OVERLAY
+═══════════════════════════════════════ */
+.modal-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:500;
+  display:none;
+  align-items:flex-end;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open { display:flex; }
+.modal-sheet {
+  background:var(--white);
+  border-radius:28px 28px 0 0;
+  width:100%;
+  padding:8px 24px 40px;
+  animation:slideUp 0.35s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp {
+  from { transform:translateY(100%); }
+  to { transform:translateY(0); }
+}
+.modal-handle {
+  width:36px; height:4px;
+  background:var(--neutral-3);
+  border-radius:2px;
+  margin:12px auto 20px;
+}
+
+/* ═══════════════════════════════════════
+   ALERT SCREEN
+═══════════════════════════════════════ */
+#alerts { background:var(--neutral); }
+.alerts-header { padding:54px 24px 16px; background:var(--white); }
+.notif-card {
+  background:var(--white);
+  border-radius:var(--radius-sm);
+  margin:0 24px 10px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  display:flex; gap:14px; align-items:flex-start;
+  cursor:pointer;
+}
+.notif-icon-wrap {
+  width:44px; height:44px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  flex-shrink:0;
+}
+.notif-time { font-size:11px; color:var(--text-3); margin-top:4px; }
+.notif-unread::before {
+  content:'';
+  width:8px; height:8px;
+  background:var(--primary);
+  border-radius:50%;
+  position:absolute;
+  top:16px; right:16px;
+}
+.notif-unread { position:relative; }
+
+/* ── DEMO CONTROLS — floating pill above phone ── */
+.demo-panel {
+  position: absolute;
+  top: -56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 100px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.demo-panel-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(81,99,95,0.45);
+  padding: 0 4px 0 2px;
+  display: none; /* hidden in pill mode */
+}
+
+.demo-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #6B8A84;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: 0.01em;
+}
+.demo-btn svg { opacity: 0.7; flex-shrink: 0; }
+.demo-btn:hover {
+  background: rgba(0,107,91,0.08);
+  color: var(--primary);
+}
+.demo-btn:hover svg { opacity: 1; }
+.demo-btn.active-screen {
+  background: var(--primary);
+  color: white;
+}
+.demo-btn.active-screen svg { opacity: 1; stroke: white; }
+
+/* divider between main btns and hamburger */
+.demo-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(0,0,0,0.1);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* hamburger trigger */
+.ham-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #6B8A84;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Manrope', sans-serif;
+}
+.ham-btn:hover { background: rgba(0,107,91,0.08); color: var(--primary); }
+
+/* keyboard hint — below phone */
+.kbd-hint {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(81,99,95,0.35);
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* hamburger drawer — fixed, smart positioned by JS */
+.ham-drawer {
+  position: fixed;
+  background: rgba(12,22,20,0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 8px;
+  z-index: 10000;
+  width: 180px;
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+.ham-drawer.open { display: flex; }
+
+.ham-drawer-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.2);
+  text-transform: uppercase;
+  padding: 6px 10px 8px;
+}
+.ham-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: 'Manrope', sans-serif;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.ham-item svg { opacity: 0.6; flex-shrink: 0; stroke: currentColor; }
+.ham-item:hover { background: rgba(0,107,91,0.3); color: white; }
+.ham-item:hover svg { opacity: 1; }
+.ham-item.active-screen { background: var(--primary); color: white; }
+.ham-item.active-screen svg { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+<!-- ── PHONE SHELL ── -->
+<div class="phone-shell">
+
+<!-- ════════════════════════════════
+  SCREEN 1: SPLASH
+════════════════════════════════ -->
+<div class="screen active" id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-logo">🥗</div>
+  <div class="splash-name">SafeBite</div>
+  <div class="splash-tag">Come seguro. Vive sin miedo.</div>
+  <div class="splash-loader"></div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 2: ONBOARDING
+════════════════════════════════ -->
+<div class="screen" id="onboarding">
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:var(--text-2);font-weight:600;letter-spacing:0.03em;">LTE ▐▐▌ 🔋</div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- slides wrapper -->
+    <div class="onb-slides" id="onbSlides" style="flex:1;">
+      <!-- Slide 0 -->
+      <div class="onb-slide" id="onbSlide0" style="justify-content:center;padding-top:20px;">
+        <div class="onb-illo onb-illo-0">
+          <div class="onb-illo-inner">🔍</div>
+          <div style="position:absolute;bottom:16px;left:16px;background:white;border-radius:10px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,107,91,0.2);font-size:11px;font-weight:700;color:var(--primary);">Sin gluten</div>
+          <div style="position:absolute;top:16px;right:16px;background:var(--danger-soft);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;color:var(--danger);">⚠ Lactosa</div>
+        </div>
+        <h2 style="text-align:center;margin-bottom:12px;">Detecta alérgenos<br><span style="color:var(--primary);">al instante</span></h2>
+        <p style="text-align:center;padding:0 8px;">Escanea cualquier producto y conoce en segundos si es seguro para tu perfil.</p>
+      </div>
+      <!-- Slide 1 -->
+      <div class="onb-slide" id="onbSlide1" style="justify-content:center;padding-top:20px;display:none;">
+        <div class="onb-illo onb-illo-1">
+          <div class="onb-illo-inner">📱</div>
+          <div style="position:absolute;bottom:20px;right:14px;background:white;border-radius:10px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,0,0,0.1);font-size:11px;font-weight:700;color:var(--text);">🏪 Menú analizado</div>
+        </div>
+        <h2 style="text-align:center;margin-bottom:12px;">Escanea productos<br><span style="color:var(--primary);">y menús</span></h2>
+        <p style="text-align:center;padding:0 8px;">Código de barras o foto de carta de restaurante. SafeBite lo analiza todo.</p>
+      </div>
+      <!-- Slide 2 -->
+      <div class="onb-slide" id="onbSlide2" style="justify-content:center;padding-top:20px;display:none;">
+        <div class="onb-illo onb-illo-2">
+          <div class="onb-illo-inner">🔔</div>
+          <div style="position:absolute;bottom:16px;left:10px;right:10px;background:white;border-radius:12px;padding:10px 12px;box-shadow:0 4px 14px rgba(0,0,0,0.1);">
+            <div style="font-size:11px;font-weight:700;color:var(--danger);margin-bottom:2px;">⚠ Alerta de perfil</div>
+            <div style="font-size:10px;color:var(--text-2);">Este producto contiene trazas de frutos secos</div>
+          </div>
+        </div>
+        <h2 style="text-align:center;margin-bottom:12px;">Alertas personalizadas<br><span style="color:var(--primary);">para ti</span></h2>
+        <p style="text-align:center;padding:0 8px;">Recibe avisos basados en tu perfil de alergias antes de consumir.</p>
+      </div>
+      <!-- Slide 3 -->
+      <div class="onb-slide" id="onbSlide3" style="justify-content:center;padding-top:20px;display:none;">
+        <div class="onb-illo onb-illo-3">
+          <div class="onb-illo-inner">😊</div>
+          <div style="position:absolute;top:20px;left:16px;background:white;border-radius:10px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,107,91,0.2);font-size:11px;font-weight:700;color:var(--primary);">✓ Restaurante seguro</div>
+        </div>
+        <h2 style="text-align:center;margin-bottom:12px;">Come con<br><span style="color:var(--primary);">confianza</span></h2>
+        <p style="text-align:center;padding:0 8px;">Tu seguridad alimentaria en el bolsillo. Siempre, en cualquier lugar.</p>
+      </div>
+    </div>
+
+    <!-- dots + nav -->
+    <div style="padding:0 32px 16px;">
+      <div class="onb-dots" id="onbDots" style="justify-content:center;margin-bottom:24px;">
+        <div class="onb-dot active"></div>
+        <div class="onb-dot"></div>
+        <div class="onb-dot"></div>
+        <div class="onb-dot"></div>
+      </div>
+      <button class="btn btn-primary" id="onbNextBtn" onclick="onbNext()">Siguiente</button>
+      <div id="onbSkip" style="text-align:center;margin-top:14px;font-size:14px;color:var(--text-3);font-weight:600;cursor:pointer;" onclick="goTo('setup')">Omitir</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 3: SETUP
+════════════════════════════════ -->
+<div class="screen" id="setup">
+  <div class="status-bar" style="background:white;">
+    <span class="status-time">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:var(--text-2);font-weight:600;letter-spacing:0.03em;">LTE ▐▐▌ 🔋</div>
+  </div>
+  <div class="setup-header">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <div onclick="goTo('onboarding')" style="cursor:pointer;font-size:20px;color:var(--text-2);">←</div>
+      <div style="flex:1;">
+        <div class="label-sm">Paso 2 de 3</div>
+        <h2 style="margin-top:2px;">Tu perfil de seguridad</h2>
+      </div>
+    </div>
+    <p style="margin-top:4px;">Indica tus alergias e intolerancias para personalizar tu experiencia.</p>
+    <div class="setup-progress"><div class="setup-progress-fill"></div></div>
+  </div>
+
+  <div class="scroll-area" style="background:white;">
+    <div class="section-label">Alergias alimentarias</div>
+    <div class="chips-grid" id="allergyChips">
+      <div class="chip" onclick="toggleChip(this,'danger')">🌾 Gluten</div>
+      <div class="chip selected" onclick="toggleChip(this,'danger')">🥜 Frutos secos</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🦐 Marisco</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🥚 Huevo</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🐟 Pescado</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🫘 Soja</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🌻 Sésamo</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🌮 Mostaza</div>
+      <div class="chip" onclick="toggleChip(this,'danger')">🍑 Sulfitos</div>
+    </div>
+
+    <div class="section-label">Intolerancias</div>
+    <div class="chips-grid">
+      <div class="chip selected" onclick="toggleChip(this,'')">🥛 Lactosa</div>
+      <div class="chip" onclick="toggleChip(this,'')">🍎 Fructosa</div>
+      <div class="chip" onclick="toggleChip(this,'')">🌽 FODMAP</div>
+      <div class="chip" onclick="toggleChip(this,'')">🧅 Histamina</div>
+      <div class="chip" onclick="toggleChip(this,'')">🫙 Gluten (NCGS)</div>
+    </div>
+
+    <div class="section-label">Preferencias dietéticas</div>
+    <div class="chips-grid">
+      <div class="chip" onclick="toggleChip(this,'')">🥦 Vegetariano</div>
+      <div class="chip" onclick="toggleChip(this,'')">🌱 Vegano</div>
+      <div class="chip" onclick="toggleChip(this,'')">🍖 Halal</div>
+      <div class="chip" onclick="toggleChip(this,'')">✡️ Kosher</div>
+    </div>
+
+    <div class="section-label">Nivel de severidad</div>
+    <p style="font-size:13px;color:var(--text-3);padding:0 24px 12px;">¿Cómo afectan a ti las reacciones?</p>
+    <div class="severity-row">
+      <div class="severity-btn mild" onclick="setSeverity(this,'mild')">😐 Leve</div>
+      <div class="severity-btn moderate sel" onclick="setSeverity(this,'moderate')">😟 Moderada</div>
+      <div class="severity-btn severe" onclick="setSeverity(this,'severe')">🚨 Severa</div>
+    </div>
+
+    <!-- Emergency contact -->
+    <div class="section-label">Contacto de emergencia</div>
+    <div style="margin:0 24px 32px;">
+      <div style="background:var(--neutral);border-radius:var(--radius-sm);padding:16px;border:1.5px solid var(--neutral-2);">
+        <div style="font-size:13px;color:var(--text-3);margin-bottom:8px;font-weight:600;">Nombre</div>
+        <div style="font-size:15px;color:var(--text);font-weight:600;">María García</div>
+        <div style="height:1px;background:var(--neutral-2);margin:12px 0;"></div>
+        <div style="font-size:13px;color:var(--text-3);margin-bottom:8px;font-weight:600;">Teléfono</div>
+        <div style="font-size:15px;color:var(--text);font-weight:600;">+34 600 123 456</div>
+      </div>
+    </div>
+
+    <div style="padding:0 24px 40px;">
+      <button class="btn btn-primary" onclick="goTo('home')">Crear mi perfil ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 4: HOME
+════════════════════════════════ -->
+<div class="screen" id="home">
+  <div style="position:relative;flex-shrink:0;">
+    <div class="status-bar" style="position:absolute;top:0;left:0;right:0;">
+      <span class="status-time" style="color:white;">9:41</span>
+      <div class="status-icons" style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;">LTE 🔋</div>
+    </div>
+    <div class="home-header">
+      <div class="home-greeting">Buenos días,</div>
+      <div class="home-name">Ana García 👋</div>
+      <div class="home-status-card">
+        <div class="status-dot"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:white;">Perfil activo</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);">Frutos secos · Lactosa vigilados</div>
+        </div>
+        <span style="color:rgba(255,255,255,0.7);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <div style="padding:20px 24px 0;">
+      <button class="scan-fab" onclick="goTo('scanner')">
+        <div class="scan-icon-circle" style="color:white;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        Escanear producto
+      </button>
+    </div>
+
+    <!-- Alert strip -->
+    <div style="padding:16px 24px 0;">
+      <div class="alert-strip" onclick="showAlert()">
+        <div class="alert-strip-icon" style="color:#B45309;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#92400E;">Alerta reciente</div>
+          <div style="font-size:12px;color:#B45309;">Activia Yogur contiene trazas detectadas</div>
+        </div>
+        <span style="margin-left:auto;color:#B45309;font-size:16px;">›</span>
+      </div>
+    </div>
+
+    <!-- Recent scans -->
+    <div class="home-section" style="padding-top:20px;">
+      <div class="home-section-header">
+        <h3>Escaneos recientes</h3>
+        <span class="see-all" onclick="goTo('alerts')">Ver todo</span>
+      </div>
+      <div class="scan-row" onclick="goTo('result')">
+        <div class="scan-thumb scan-thumb-safe">🥛</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Leche sin lactosa</div>
+          <div style="font-size:12px;color:var(--text-3);">Hacendado · hace 2 horas</div>
+        </div>
+        <div class="badge badge-green">Seguro</div>
+      </div>
+      <div class="scan-row" onclick="goTo('result')">
+        <div class="scan-thumb scan-thumb-warn">🍫</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Chocolate con leche</div>
+          <div style="font-size:12px;color:var(--text-3);">Nestlé · ayer</div>
+        </div>
+        <div class="badge badge-amber">Precaución</div>
+      </div>
+      <div class="scan-row" onclick="goTo('result')">
+        <div class="scan-thumb scan-thumb-danger">🥜</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Barrita energética</div>
+          <div style="font-size:12px;color:var(--text-3);">Kind · ayer</div>
+        </div>
+        <div class="badge badge-red">Peligro</div>
+      </div>
+    </div>
+
+    <!-- Nearby restaurants -->
+    <div class="home-section" style="padding:20px 0 0;">
+      <div class="home-section-header" style="padding:0 24px;">
+        <h3>Restaurantes seguros</h3>
+        <span class="see-all" onclick="goTo('restaurants')">Ver mapa</span>
+      </div>
+      <div class="rest-scroll" style="padding:0 24px 4px;margin-top:12px;">
+        <div class="rest-card" onclick="goTo('restaurants')">
+          <div class="rest-card-img" style="background:linear-gradient(135deg,#E8F5F2,#C2E8E1);">🥗</div>
+          <div class="rest-card-body">
+            <div class="rest-card-name">La Cocina Verde</div>
+            <div class="rest-card-info">0.3 km · Sin gluten ✓</div>
+            <div class="badge badge-green" style="margin-top:6px;font-size:10px;">100% compatible</div>
+          </div>
+        </div>
+        <div class="rest-card" onclick="goTo('restaurants')">
+          <div class="rest-card-img" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);">🍜</div>
+          <div class="rest-card-body">
+            <div class="rest-card-name">BistroBio</div>
+            <div class="rest-card-info">0.6 km · Vegano</div>
+            <div class="badge badge-amber" style="margin-top:6px;font-size:10px;">Parcial</div>
+          </div>
+        </div>
+        <div class="rest-card" onclick="goTo('restaurants')">
+          <div class="rest-card-img" style="background:linear-gradient(135deg,#FDECEA,#FECACA);">🍕</div>
+          <div class="rest-card-body">
+            <div class="rest-card-name">Mamma Toscana</div>
+            <div class="rest-card-info">1.1 km · Sin lactosa</div>
+            <div class="badge badge-green" style="margin-top:6px;font-size:10px;">95% compatible</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="home-section" style="padding:20px 24px 100px;">
+      <div class="home-section-header">
+        <h3>Alternativas seguras</h3>
+      </div>
+      <div class="card card-sm" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
+        <div style="font-size:30px;">🥛</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Leche de almendras sin azúcar</div>
+          <div style="font-size:12px;color:var(--text-3);">Califia Farms · Sin lactosa ✓</div>
+        </div>
+        <div style="font-size:20px;color:var(--primary);">+</div>
+      </div>
+      <div class="card card-sm" style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:30px;">🧁</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Galletas sin gluten Schar</div>
+          <div style="font-size:12px;color:var(--text-3);">Sin trazas verificado ✓</div>
+        </div>
+        <div style="font-size:20px;color:var(--primary);">+</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="goTo('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 22V12h6v10"/></svg></div><div class="nav-label">Inicio</div></div>
+    <div class="nav-item" onclick="goTo('scanner')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="nav-label">Escanear</div></div>
+    <div class="nav-item" onclick="goTo('restaurants')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div class="nav-label">Lugares</div></div>
+    <div class="nav-item" onclick="goTo('alerts')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="nav-label">Alertas</div></div>
+    <div class="nav-item" onclick="goTo('profile')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 5: SCANNER
+════════════════════════════════ -->
+<div class="screen" id="scanner">
+  <div class="scanner-cam">
+    <div class="cam-grid"></div>
+    <div class="scan-product-ghost">🥛</div>
+    <div class="scan-frame">
+      <div class="scan-corner sc-tl"></div>
+      <div class="scan-corner sc-tr"></div>
+      <div class="scan-corner sc-bl"></div>
+      <div class="scan-corner sc-br"></div>
+      <div class="scan-beam"></div>
+    </div>
+    <div class="scanner-hint">Apunta al código de barras o empaque</div>
+  </div>
+  <div class="scanner-top">
+    <button class="scanner-top-btn" onclick="goTo('home')" style="font-size:18px;color:white;">←</button>
+    <div class="scanner-title">Escanear producto</div>
+    <button class="scanner-top-btn" style="margin-left:auto;">💡</button>
+  </div>
+  <div class="scanner-bottom">
+    <div class="scanner-mode-row">
+      <div class="scanner-mode-btn active">📦 Producto</div>
+      <div class="scanner-mode-btn" onclick="this.parentElement.querySelectorAll('.scanner-mode-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">🍽️ Menú</div>
+      <div class="scanner-mode-btn" onclick="this.parentElement.querySelectorAll('.scanner-mode-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">📝 Ingredientes</div>
+    </div>
+    <button class="btn btn-primary" onclick="goTo('result')" style="margin-bottom:12px;">
+      <span style="font-size:20px;">▶</span> Simular escaneo
+    </button>
+    <button class="gallery-btn">🖼️ Elegir de galería</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 6: RESULT
+════════════════════════════════ -->
+<div class="screen" id="result">
+  <div class="status-bar" style="position:absolute;top:0;left:0;right:0;z-index:10;">
+    <span class="status-time" style="color:white;">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;">LTE 🔋</div>
+  </div>
+
+  <div class="result-hero warn-bg" style="flex-shrink:0;">
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,0.08),transparent 60%);"></div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px;position:relative;z-index:1;">
+      <button onclick="goTo('scanner')" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.8);">Resultado del análisis</div>
+      <button style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;">···</button>
+    </div>
+    <div class="result-product-row">
+      <div class="result-thumb">🥛</div>
+      <div>
+        <div class="result-name">Yogur Natural Bio</div>
+        <div class="result-brand">Danone · 125g · código 8410076600023</div>
+      </div>
+    </div>
+    <div class="result-score">
+      <div>
+        <div class="score-num">68</div>
+        <div class="score-label">Puntuación de seguridad</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:6px;">Nivel de riesgo para tu perfil</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:68%;"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-size:10px;color:rgba(255,255,255,0.5);">Peligroso</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.5);">Seguro</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="result-tab-row" style="flex-shrink:0;">
+    <div class="result-tab active" id="tab0" onclick="switchTab(0)">Resumen</div>
+    <div class="result-tab" id="tab1" onclick="switchTab(1)">Ingredientes</div>
+    <div class="result-tab" id="tab2" onclick="switchTab(2)">Alternativas</div>
+  </div>
+
+  <div class="scroll-area">
+    <!-- Tab 0: Summary -->
+    <div id="tabContent0">
+      <div style="padding:16px 24px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;letter-spacing:0.05em;">ALÉRGENOS DETECTADOS</div>
+        <div>
+          <span class="allergen-chip allergen-trace">Lactosa (trazas)</span>
+          <span class="allergen-chip allergen-safe">Sin gluten</span>
+          <span class="allergen-chip allergen-safe">Sin frutos secos</span>
+          <span class="allergen-chip allergen-safe">Sin marisco</span>
+        </div>
+      </div>
+      <div style="margin:0 24px 14px;background:var(--warning-soft);border-radius:var(--radius-sm);padding:16px;border-left:3px solid var(--warning);">
+        <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px;">⚠ Por qué esto importa</div>
+        <p style="font-size:13px;color:#B45309;">Este producto puede contener trazas de lactosa. Con tu nivel de intolerancia moderada, podría causar molestias digestivas. Consulta con tu médico antes de consumirlo.</p>
+      </div>
+      <div style="padding:0 24px 16px;display:flex;gap:10px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="goTo('home')">💾 Guardar</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1;">📤 Compartir</button>
+      </div>
+    </div>
+
+    <!-- Tab 1: Ingredients (hidden by default) -->
+    <div id="tabContent1" style="display:none;padding:16px 24px 40px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:0.05em;margin-bottom:12px;">COMPOSICIÓN COMPLETA</div>
+        <div class="ingredient-row">
+          <div class="ingredient-dot" style="background:var(--primary);"></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">Leche desnatada</div><div style="font-size:11px;color:var(--text-3);">Ingrediente principal · Sin alérgenos activos</div></div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-dot" style="background:var(--warning);"></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">Fermentos lácticos <span style="color:var(--warning);">⚠</span></div><div style="font-size:11px;color:var(--text-3);">Puede contener trazas de lactosa</div></div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-dot" style="background:var(--primary);"></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">Inulina</div><div style="font-size:11px;color:var(--text-3);">Fibra prebiótica · Sin riesgo</div></div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-dot" style="background:var(--primary);"></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">Pectina</div><div style="font-size:11px;color:var(--text-3);">Espesante natural · Sin riesgo</div></div>
+        </div>
+        <div class="ingredient-row" style="border:none;">
+          <div class="ingredient-dot" style="background:var(--primary);"></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">Aroma natural</div><div style="font-size:11px;color:var(--text-3);">Sin alérgenos declarados</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Alternatives (hidden) -->
+    <div id="tabContent2" style="display:none;padding:16px 24px 40px;">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:16px;">Alternativas seguras para tu perfil:</div>
+      <div class="card card-sm" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
+        <div style="font-size:32px;">🥥</div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;">Yogur coco Bio</div><div style="font-size:12px;color:var(--text-3);">Sin lactosa · 100% vegetal</div></div>
+        <div class="badge badge-green">✓ Ideal</div>
+      </div>
+      <div class="card card-sm" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
+        <div style="font-size:32px;">🌱</div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;">Yogur soja Alpro</div><div style="font-size:12px;color:var(--text-3);">Sin lactosa · Proteína vegetal</div></div>
+        <div class="badge badge-green">Seguro</div>
+      </div>
+      <div class="card card-sm" style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:32px;">🥛</div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;">Kefir sin lactosa</div><div style="font-size:12px;color:var(--text-3);">Lactosa eliminada 99,9%</div></div>
+        <div class="badge badge-green">Seguro</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goTo('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 22V12h6v10"/></svg></div><div class="nav-label">Inicio</div></div>
+    <div class="nav-item active" onclick="goTo('scanner')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="nav-label">Escanear</div></div>
+    <div class="nav-item" onclick="goTo('restaurants')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div class="nav-label">Lugares</div></div>
+    <div class="nav-item" onclick="goTo('alerts')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="nav-label">Alertas</div></div>
+    <div class="nav-item" onclick="goTo('profile')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 7: RESTAURANTS
+════════════════════════════════ -->
+<div class="screen" id="restaurants">
+  <div class="status-bar" style="background:white;">
+    <span class="status-time">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:var(--text-2);font-weight:600;letter-spacing:0.03em;">LTE ▐▐▌ 🔋</div>
+  </div>
+  <div class="rest-header">
+    <h2>Restaurantes seguros</h2>
+    <p style="font-size:13px;color:var(--text-3);margin-top:4px;">Filtrados por tu perfil · Madrid</p>
+    <div class="search-bar">
+      <span style="color:var(--text-3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input placeholder="Buscar restaurante o cocina..." />
+      <span style="color:var(--text-3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <div class="filter-row">
+      <div class="chip selected">✓ Todos</div>
+      <div class="chip" onclick="toggleChip(this,'')">🥗 Sin gluten</div>
+      <div class="chip" onclick="toggleChip(this,'')">🥛 Sin lactosa</div>
+      <div class="chip" onclick="toggleChip(this,'')">🥜 Sin frutos secos</div>
+      <div class="chip" onclick="toggleChip(this,'')">⭐ Top rated</div>
+    </div>
+
+    <!-- Map -->
+    <div class="map-placeholder">
+      <div class="map-grid"></div>
+      <div class="map-pin" style="top:40px;left:80px;"></div>
+      <div class="map-pin" style="top:100px;left:160px;background:var(--warning);"></div>
+      <div class="map-pin" style="top:60px;right:60px;"></div>
+      <!-- user dot -->
+      <div style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:16px;height:16px;background:white;border-radius:50%;border:3px solid var(--primary);box-shadow:0 0 0 6px rgba(0,107,91,0.2);"></div>
+      <div style="position:absolute;top:10px;right:10px;background:white;border-radius:var(--radius-xs);padding:6px 10px;font-size:11px;font-weight:700;color:var(--primary);box-shadow:var(--shadow);">📍 Tu ubicación</div>
+    </div>
+
+    <!-- List -->
+    <div style="padding:0 24px 8px;"><div class="label-sm">3 restaurantes compatibles</div></div>
+
+    <div class="rest-list-card">
+      <div class="rest-emoji">🥗</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">La Cocina Verde</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Vegana · C/ Serrano 45 · 0.3 km</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="badge badge-green" style="font-size:10px;">Sin gluten</span>
+          <span class="badge badge-green" style="font-size:10px;">Sin lactosa</span>
+        </div>
+      </div>
+      <div class="rest-compat rest-compat-full">✓</div>
+    </div>
+
+    <div class="rest-list-card">
+      <div class="rest-emoji">🍜</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">BistroBio</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Mediterránea · C/ Alcalá 12 · 0.6 km</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="badge badge-green" style="font-size:10px;">Sin gluten</span>
+          <span class="badge badge-amber" style="font-size:10px;">Lactosa: preguntar</span>
+        </div>
+      </div>
+      <div class="rest-compat rest-compat-part">~</div>
+    </div>
+
+    <div class="rest-list-card" style="margin-bottom:100px;">
+      <div class="rest-emoji">🍕</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Mamma Toscana</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Italiana · Gran Vía 8 · 1.1 km</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="badge badge-green" style="font-size:10px;">Sin lactosa</span>
+          <span class="badge badge-green" style="font-size:10px;">Sin frutos secos</span>
+        </div>
+      </div>
+      <div class="rest-compat rest-compat-full">✓</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goTo('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 22V12h6v10"/></svg></div><div class="nav-label">Inicio</div></div>
+    <div class="nav-item" onclick="goTo('scanner')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="nav-label">Escanear</div></div>
+    <div class="nav-item active" onclick="goTo('restaurants')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div class="nav-label">Lugares</div></div>
+    <div class="nav-item" onclick="goTo('alerts')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="nav-label">Alertas</div></div>
+    <div class="nav-item" onclick="goTo('profile')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 8: ALERTS
+════════════════════════════════ -->
+<div class="screen" id="alerts">
+  <div class="status-bar" style="background:white;">
+    <span class="status-time">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:var(--text-2);font-weight:600;letter-spacing:0.03em;">LTE ▐▐▌ 🔋</div>
+  </div>
+  <div class="alerts-header">
+    <h2>Alertas</h2>
+    <p style="font-size:13px;color:var(--text-3);margin-top:4px;">3 sin leer</p>
+  </div>
+
+  <div class="scroll-area" style="padding-top:16px;">
+    <div style="padding:0 24px 8px;"><div class="label-sm">Hoy</div></div>
+
+    <div class="notif-card notif-unread">
+      <div class="notif-icon-wrap" style="background:var(--danger-soft);" style="color:var(--danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Riesgo detectado en tu perfil</div>
+        <p style="font-size:13px;color:var(--text-2);margin-top:3px;">Este producto contiene trazas de frutos secos — tu alérgeno principal.</p>
+        <div class="notif-time">Hace 2 horas · Yogur Natural Bio</div>
+      </div>
+    </div>
+
+    <div class="notif-card notif-unread">
+      <div class="notif-icon-wrap" style="background:var(--primary-soft);" style="color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Nuevo restaurante compatible</div>
+        <p style="font-size:13px;color:var(--text-2);margin-top:3px;">La Cocina Verde abrió cerca de ti. 100% compatible con tu perfil.</p>
+        <div class="notif-time">Hace 5 horas · 0.3 km de tu ubicación</div>
+      </div>
+    </div>
+
+    <div class="notif-card notif-unread">
+      <div class="notif-icon-wrap" style="background:var(--warning-soft);" style="color:#F97316;font-size:18px;">↺</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Fórmula modificada</div>
+        <p style="font-size:13px;color:var(--text-2);margin-top:3px;">Activia Yogur ha cambiado sus ingredientes. Revisa antes de consumir.</p>
+        <div class="notif-time">Hace 6 horas · Alerta automática</div>
+      </div>
+    </div>
+
+    <div style="padding:16px 24px 8px;"><div class="label-sm">Ayer</div></div>
+
+    <div class="notif-card">
+      <div class="notif-icon-wrap" style="background:var(--primary-soft);" style="color:var(--primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Perfil actualizado</div>
+        <p style="font-size:13px;color:var(--text-2);margin-top:3px;">Tu perfil de alergia a frutos secos ha sido reforzado con nueva información.</p>
+        <div class="notif-time">Ayer · 18:32</div>
+      </div>
+    </div>
+
+    <div class="notif-card" style="margin-bottom:100px;">
+      <div class="notif-icon-wrap" style="background:var(--primary-soft);" style="color:#EAB308;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Análisis semanal listo</div>
+        <p style="font-size:13px;color:var(--text-2);margin-top:3px;">Has escaneado 12 productos esta semana. 8 seguros, 3 con precaución, 1 peligroso.</p>
+        <div class="notif-time">Ayer · 09:00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goTo('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 22V12h6v10"/></svg></div><div class="nav-label">Inicio</div></div>
+    <div class="nav-item" onclick="goTo('scanner')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="nav-label">Escanear</div></div>
+    <div class="nav-item" onclick="goTo('restaurants')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div class="nav-label">Lugares</div></div>
+    <div class="nav-item active" onclick="goTo('alerts')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="nav-label">Alertas</div></div>
+    <div class="nav-item" onclick="goTo('profile')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 9: PROFILE
+════════════════════════════════ -->
+<div class="screen" id="profile">
+  <div class="status-bar" style="position:absolute;top:0;z-index:10;">
+    <span class="status-time" style="color:white;">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;">LTE 🔋</div>
+  </div>
+  <div class="profile-header" style="flex-shrink:0;">
+    <div class="profile-avatar">👩</div>
+    <div class="profile-username">Ana García</div>
+    <div class="profile-email">ana.garcia@email.com</div>
+    <div class="profile-stats-row">
+      <div class="pstat"><div class="pstat-num">47</div><div class="pstat-label">Escaneos</div></div>
+      <div class="pstat"><div class="pstat-num">3</div><div class="pstat-label">Alergias</div></div>
+      <div class="pstat"><div class="pstat-num">12</div><div class="pstat-label">Favoritos</div></div>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <!-- Allergy profile card -->
+    <div style="margin:16px 24px 0;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">🛡️ Mi perfil de seguridad</div>
+          <span style="font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="goTo('setup')">Editar</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="chip selected" style="font-size:12px;padding:6px 10px;">🥜 Frutos secos</span>
+          <span class="chip selected" style="font-size:12px;padding:6px 10px;">🥛 Lactosa</span>
+          <span class="chip" style="font-size:12px;padding:6px 10px;background:var(--neutral);">+ Añadir</span>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--neutral-2);">
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:6px;">Nivel de severidad</div>
+          <div class="risk-bar risk-warn"><div class="risk-fill" style="width:60%;"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-3);">
+            <span>Leve</span><span style="font-weight:700;color:#B45309;">Moderada</span><span>Severa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#EFF6FF;color:#3B82F6;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div class="settings-text"><div class="settings-title">Notificaciones</div><div class="settings-sub">Alertas activas</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#F0FDF4;color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="settings-text"><div class="settings-title">Ubicación</div><div class="settings-sub">Para restaurantes cercanos</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#FFF7ED;color:#F97316;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+        <div class="settings-text"><div class="settings-title">Modo oscuro</div><div class="settings-sub">Apariencia de la app</div></div>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-row" onclick="goTo('premium')">
+        <div class="settings-icon" style="background:var(--primary-soft);color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="settings-text"><div class="settings-title" style="color:var(--primary);">SafeBite Premium</div><div class="settings-sub">Desbloquea todas las funciones</div></div>
+        <span class="settings-arrow" style="color:var(--neutral-3);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#FDF2F8;color:#EC4899;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
+        <div class="settings-text"><div class="settings-title">Contacto de emergencia</div><div class="settings-sub">María García · +34 600 123 456</div></div>
+        <span class="settings-arrow" style="color:var(--neutral-3);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#F0F9FF;color:#6366F1;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+        <div class="settings-text"><div class="settings-title">Privacidad y datos</div><div class="settings-sub">RGPD · Tus datos, tu control</div></div>
+        <span class="settings-arrow" style="color:var(--neutral-3);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+    </div>
+
+    <div style="margin:8px 24px 40px;">
+      <button class="btn btn-outline" style="color:var(--danger);border-color:var(--danger);font-size:14px;padding:13px;" onclick="goTo('splash')">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goTo('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 22V12h6v10"/></svg></div><div class="nav-label">Inicio</div></div>
+    <div class="nav-item" onclick="goTo('scanner')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="nav-label">Escanear</div></div>
+    <div class="nav-item" onclick="goTo('restaurants')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div class="nav-label">Lugares</div></div>
+    <div class="nav-item" onclick="goTo('alerts')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="nav-label">Alertas</div></div>
+    <div class="nav-item active" onclick="goTo('profile')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+  SCREEN 10: PREMIUM
+════════════════════════════════ -->
+<div class="screen" id="premium">
+  <div class="status-bar" style="position:absolute;top:0;z-index:10;">
+    <span class="status-time" style="color:white;">9:41</span>
+    <div class="status-icons" style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;">LTE 🔋</div>
+  </div>
+  <div class="premium-header" style="flex-shrink:0;">
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,rgba(0,0,0,0.2),transparent 60%),radial-gradient(circle at 80% 10%,rgba(255,255,255,0.1),transparent 40%);"></div>
+    <div style="position:relative;z-index:1;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <button onclick="goTo('profile')" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div class="premium-badge"><span class="premium-stars">✦✦✦</span> SafeBite Premium</div>
+      <div class="premium-title">Come seguro,<br>donde sea.</div>
+      <p class="premium-sub">Acceso completo a todas las funciones avanzadas de SafeBite.</p>
+    </div>
+  </div>
+
+  <div class="scroll-area" style="background:var(--dark);">
+    <div class="premium-plans">
+      <div class="plan-card">
+        <div class="plan-period">Mensual</div>
+        <div class="plan-price">€4<span>.99/mes</span></div>
+        <div class="plan-sub">Facturado mensualmente</div>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge-top">✦ Mejor valor</div>
+        <div class="plan-period">Anual</div>
+        <div class="plan-price">€29<span>.99/año</span></div>
+        <div class="plan-sub">€2,50/mes · Ahorra 50%</div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div style="padding:8px 0;">
+      <div class="premium-feature-row">
+        <div class="pf-icon">🌍</div>
+        <div><div class="pf-title">Base de datos global</div><div class="pf-sub">+2M de productos de 45 países. Viaja sin miedo.</div></div>
+      </div>
+      <div class="premium-feature-row">
+        <div class="pf-icon">🤖</div>
+        <div><div class="pf-title">Explicaciones con IA</div><div class="pf-sub">Entiende cada ingrediente con lenguaje claro y personalizado.</div></div>
+      </div>
+      <div class="premium-feature-row">
+        <div class="pf-icon">👨‍👩‍👧</div>
+        <div><div class="pf-title">Perfiles familiares</div><div class="pf-sub">Gestiona hasta 5 perfiles con diferentes alergias.</div></div>
+      </div>
+      <div class="premium-feature-row">
+        <div class="pf-icon" style="color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div><div class="pf-title">Análisis avanzado de restaurantes</div><div class="pf-sub">Escanea menús completos y recibe análisis plato a plato.</div></div>
+      </div>
+      <div class="premium-feature-row" style="border:none;">
+        <div class="pf-icon">✈️</div>
+        <div><div class="pf-title">Modo viaje</div><div class="pf-sub">Alérgenos en el idioma local de +30 países.</div></div>
+      </div>
+    </div>
+
+    <div class="premium-footer">
+      <button class="btn btn-primary" style="margin-bottom:12px;font-size:17px;padding:18px;">Empezar prueba gratis · 7 días</button>
+      <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">Sin compromiso · Cancela cuando quieras · RGPD compliant</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ALERT MODAL ════════ -->
+<div class="modal-overlay" id="alertModal" onclick="closeAlert(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;font-size:48px;margin-bottom:12px;color:var(--danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <h2 style="text-align:center;margin-bottom:8px;">Alerta de alérgeno</h2>
+    <p style="text-align:center;color:var(--text-2);margin-bottom:20px;">Activia Yogur ha cambiado su fórmula y ahora puede contener <strong>trazas de frutos secos</strong>, tu alérgeno principal.</p>
+    <div style="background:var(--danger-soft);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;border-left:3px solid var(--danger);">
+      <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:4px;">¿Qué hacer?</div>
+      <p style="font-size:13px;color:#B91C1C;">Deja de consumir este producto hasta verificar con tu médico. SafeBite ha marcado este producto como "verificar" en tu historial.</p>
+    </div>
+    <button class="btn btn-primary" onclick="closeAlert()" style="margin-bottom:10px;">Entendido, marcar como revisado</button>
+    <button class="btn btn-secondary" onclick="closeAlert()">Ver alternativas seguras</button>
+  </div>
+</div>
+
+</div><!-- /phone-shell -->
+
+<!-- ════ DEMO NAV PILL — floats above phone ════ -->
+<div class="demo-panel" id="demoPanel">
+  <button class="demo-btn active-screen" id="dBtn-splash"       onclick="goTo('splash')">✦ Splash</button>
+  <button class="demo-btn"              id="dBtn-home"          onclick="goTo('home')">Inicio</button>
+  <button class="demo-btn"              id="dBtn-scanner"       onclick="goTo('scanner')">Scanner</button>
+  <button class="demo-btn"              id="dBtn-result"        onclick="goTo('result')">Resultado</button>
+  <div class="demo-divider"></div>
+  <button class="ham-btn" id="hamTrigger" onclick="toggleHam(event)">☰ Más</button>
+</div>
+<div class="kbd-hint">← → para navegar</div>
+
+</div><!-- /stage -->
+
+<!-- Hamburger drawer — fixed, JS positions it -->
+<div class="ham-drawer" id="hamDrawer">
+  <div class="ham-drawer-label">Todas las pantallas</div>
+  <button class="ham-item" id="hBtn-splash"      onclick="goTo('splash');closeHam()">✦ Splash</button>
+  <button class="ham-item" id="hBtn-onboarding"  onclick="goTo('onboarding');closeHam()">Onboarding</button>
+  <button class="ham-item" id="hBtn-setup"       onclick="goTo('setup');closeHam()">Setup · Alergias</button>
+  <button class="ham-item" id="hBtn-home"        onclick="goTo('home');closeHam()">Inicio</button>
+  <button class="ham-item" id="hBtn-scanner"     onclick="goTo('scanner');closeHam()">Scanner</button>
+  <button class="ham-item" id="hBtn-result"      onclick="goTo('result');closeHam()">Resultado</button>
+  <button class="ham-item" id="hBtn-restaurants" onclick="goTo('restaurants');closeHam()">Restaurantes</button>
+  <button class="ham-item" id="hBtn-alerts"      onclick="goTo('alerts');closeHam()">Alertas</button>
+  <button class="ham-item" id="hBtn-profile" onclick="goTo('profile');closeHam()">Perfil</button>
+  <button class="ham-item" id="hBtn-premium"     onclick="goTo('premium');closeHam()">     ✦ Premium</button>
+</div>
+
+<script>
+// ── NAVIGATION ──────────────────────────────────
+let currentScreen = 'splash';
+
+// Screens shown as primary buttons in the side panel
+const primaryBtns = ['splash','home','scanner','result'];
+
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add('active');
+    target.style.animation = 'fadeIn 0.3s ease';
+    setTimeout(() => target.style.animation = '', 300);
+  }
+  currentScreen = screenId;
+
+  // Update primary panel buttons
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active-screen'));
+  const dBtn = document.getElementById('dBtn-' + screenId);
+  if (dBtn) dBtn.classList.add('active-screen');
+
+  // Update hamburger items
+  document.querySelectorAll('.ham-item').forEach(b => b.classList.remove('active-screen'));
+  const hBtn = document.getElementById('hBtn-' + screenId);
+  if (hBtn) hBtn.classList.add('active-screen');
+
+  // If screen not in primary list, show it as extra button temporarily
+  if (!primaryBtns.includes(screenId)) {
+    // replace last primary slot with current
+    const extra = document.getElementById('dBtn-result');
+    if (extra) {
+      extra.classList.remove('active-screen');
+    }
+  }
+
+  // Scroll to top
+  const scrollArea = target && target.querySelector('.scroll-area');
+  if (scrollArea) scrollArea.scrollTop = 0;
+}
+
+// ── HAMBURGER ────────────────────────────────────
+function toggleHam(e) {
+  e && e.stopPropagation();
+  const drawer = document.getElementById('hamDrawer');
+  const trigger = document.getElementById('hamTrigger');
+  const isOpen = drawer.classList.contains('open');
+
+  if (!isOpen) {
+    // Position drawer above the trigger button
+    const rect = trigger.getBoundingClientRect();
+    drawer.style.left = rect.left + 'px';
+    drawer.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    drawer.style.top = 'auto';
+  }
+  drawer.classList.toggle('open');
+}
+function closeHam() {
+  document.getElementById('hamDrawer').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const drawer = document.getElementById('hamDrawer');
+  const trigger = document.getElementById('hamTrigger');
+  if (drawer && drawer.classList.contains('open') &&
+      !drawer.contains(e.target) && e.target !== trigger &&
+      !trigger.contains(e.target)) {
+    closeHam();
+  }
+});
+
+// ── SPLASH AUTO-ADVANCE ──────────────────────────
+setTimeout(() => goTo('onboarding'), 2400);
+
+// ── ONBOARDING ──────────────────────────────────
+let onbIdx = 0;
+const onbSlideIds = ['onbSlide0','onbSlide1','onbSlide2','onbSlide3'];
+
+function onbNext() {
+  if (onbIdx < 3) {
+    document.getElementById(onbSlideIds[onbIdx]).style.display = 'none';
+    onbIdx++;
+    document.getElementById(onbSlideIds[onbIdx]).style.display = 'flex';
+    updateDots();
+    if (onbIdx === 3) {
+      document.getElementById('onbNextBtn').textContent = 'Crear mi perfil de seguridad';
+      document.getElementById('onbNextBtn').onclick = () => goTo('setup');
+      document.getElementById('onbSkip').style.display = 'none';
+    }
+  }
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('#onbDots .onb-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('active', i === onbIdx);
+  });
+}
+
+// ── CHIPS ────────────────────────────────────────
+function toggleChip(el, type) {
+  el.classList.toggle('selected');
+  if (type === 'danger') el.classList.toggle('chip-danger', el.classList.contains('selected'));
+}
+
+// ── SEVERITY ─────────────────────────────────────
+function setSeverity(el, level) {
+  document.querySelectorAll('.severity-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ── RESULT TABS ──────────────────────────────────
+function switchTab(idx) {
+  [0,1,2].forEach(i => {
+    document.getElementById('tab'+i).classList.toggle('active', i === idx);
+    document.getElementById('tabContent'+i).style.display = i === idx ? 'block' : 'none';
+  });
+}
+
+// ── ALERT MODAL ──────────────────────────────────
+function showAlert() {
+  document.getElementById('alertModal').classList.add('open');
+}
+function closeAlert(e) {
+  if (!e || e.target === document.getElementById('alertModal')) {
+    document.getElementById('alertModal').classList.remove('open');
+  }
+}
+
+// ── KEYBOARD SHORTCUTS ───────────────────────────
+const screens = ['splash','onboarding','setup','home','scanner','result','restaurants','alerts','profile','premium'];
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') {
+    const idx = screens.indexOf(currentScreen);
+    if (idx < screens.length - 1) goTo(screens[idx + 1]);
+  }
+  if (e.key === 'ArrowLeft') {
+    const idx = screens.indexOf(currentScreen);
+    if (idx > 0) goTo(screens[idx - 1]);
+  }
+  if (e.key === 'Escape') closeHam();
+});
+</script>
+</body>
+</html>
